@@ -1,11 +1,10 @@
-
 import { BoardState, Piece, PieceType, Player, Position } from '../types';
 
 const isWithinBoard = (row: number, col: number) => row >= 0 && row < 8 && col >= 0 && col < 8;
 
 const getPieceAt = (board: BoardState, pos: Position): Piece | null => board[pos.row][pos.col];
 
-const getKingPosition = (board: BoardState, player: Player): Position | null => {
+export const getKingPosition = (board: BoardState, player: Player): Position | null => {
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const piece = board[r][c];

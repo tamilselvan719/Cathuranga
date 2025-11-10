@@ -1,18 +1,20 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BoardState, Piece, PieceType, Player, Position } from './types';
 import { INITIAL_BOARD } from './constants';
 import * as gameLogic from './services/gameLogic';
+import * as ai from './services/ai';
 import Board from './components/Board';
 
 const App: React.FC = () => {
-  const [board, setBoard] = useState<BoardState>(gameLogic.isKingInCheck(INITIAL_BOARD, Player.WHITE) ? [] : INITIAL_BOARD);
+  const [board, setBoard] = useState<BoardState>(INITIAL_BOARD);
   const [currentPlayer, setCurrentPlayer] = useState<Player>(Player.WHITE);
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [gameStatus, setGameStatus] = useState<string>('White to move');
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [kingInCheckPos, setKingInCheckPos] = useState<Position | null>(null);
+  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
 
   const resetGame = useCallback(() => {
     setBoard(INITIAL_BOARD);
@@ -22,45 +24,67 @@ const App: React.FC = () => {
     setGameOver(false);
     setKingInCheckPos(null);
     setGameStatus('White to move');
+    setIsAiThinking(false);
   }, []);
 
-  useEffect(() => {
-      resetGame();
-  }, [resetGame]);
-
   const updateGameStatus = useCallback((currentBoard: BoardState, nextPlayer: Player) => {
+    const isCheck = gameLogic.isKingInCheck(currentBoard, nextPlayer);
+    const kingPos = gameLogic.getKingPosition(currentBoard, nextPlayer);
+    
     if (gameLogic.isCheckmate(currentBoard, nextPlayer)) {
-      setGameStatus(`Checkmate! ${currentPlayer === Player.WHITE ? 'White' : 'Black'} wins!`);
+      const winner = nextPlayer === Player.WHITE ? 'Black' : 'White';
+      setGameStatus(`Checkmate! ${winner} wins!`);
       setGameOver(true);
+      setKingInCheckPos(kingPos);
     } else if (gameLogic.isStalemate(currentBoard, nextPlayer)) {
       setGameStatus('Stalemate! The game is a draw.');
       setGameOver(true);
+      setKingInCheckPos(null);
     } else {
       const turn = nextPlayer === Player.WHITE ? 'White' : 'Black';
-      const checkStatus = gameLogic.isKingInCheck(currentBoard, nextPlayer) ? ' (Check!)' : '';
-      setGameStatus(`${turn} to move${checkStatus}`);
-      
-      const kingPos = findKing(currentBoard, nextPlayer);
-      if(checkStatus && kingPos){
-        setKingInCheckPos(kingPos);
-      } else {
-        setKingInCheckPos(null);
-      }
+      setGameStatus(`${turn} to move${isCheck ? ' (Check!)' : ''}`);
+      setKingInCheckPos(isCheck ? kingPos : null);
     }
-  }, [currentPlayer]);
+  }, []);
 
-  const findKing = (boardState: BoardState, player: Player): Position | null => {
-    for(let r=0; r<8; r++) {
-      for(let c=0; c<8; c++) {
-        const p = boardState[r][c];
-        if(p && p.type === PieceType.KING && p.player === player) return {row: r, col: c};
+  const movePiece = useCallback((from: Position, to: Position) => {
+    const newBoard = board.map(r => [...r]);
+    const pieceToMove = { ...(newBoard[from.row][from.col] as Piece) };
+    
+    // Pawn promotion
+    if (pieceToMove.type === PieceType.PAWN) {
+      if ((pieceToMove.player === Player.WHITE && to.row === 0) || (pieceToMove.player === Player.BLACK && to.row === 7)) {
+        pieceToMove.type = PieceType.GENERAL;
       }
     }
-    return null;
-  }
+
+    newBoard[to.row][to.col] = pieceToMove;
+    newBoard[from.row][from.col] = null;
+    
+    setBoard(newBoard);
+    setSelectedPiece(null);
+    setValidMoves([]);
+
+    const nextPlayer = currentPlayer === Player.WHITE ? Player.BLACK : Player.WHITE;
+    setCurrentPlayer(nextPlayer);
+    updateGameStatus(newBoard, nextPlayer);
+  }, [board, currentPlayer, updateGameStatus]);
+
+  useEffect(() => {
+    if (currentPlayer === Player.BLACK && !gameOver) {
+      setIsAiThinking(true);
+      setTimeout(() => {
+        const bestMove = ai.findBestMove(board, 3);
+        if (bestMove) {
+          movePiece(bestMove.from, bestMove.to);
+        }
+        setIsAiThinking(false);
+      }, 500);
+    }
+  }, [currentPlayer, gameOver, board, movePiece]);
 
   const handleSquareClick = (pos: Position) => {
-    if (gameOver) return;
+    if (gameOver || isAiThinking || currentPlayer === Player.BLACK) return;
 
     const piece = board[pos.row][pos.col];
 
@@ -87,29 +111,6 @@ const App: React.FC = () => {
     const moves = gameLogic.getValidMoves(piece, pos, board);
     setValidMoves(moves);
   };
-
-  const movePiece = (from: Position, to: Position) => {
-    const newBoard = board.map(r => [...r]);
-    const pieceToMove = newBoard[from.row][from.col] as Piece;
-    
-    // Pawn promotion
-    if (pieceToMove.type === PieceType.PAWN) {
-      if ((pieceToMove.player === Player.WHITE && to.row === 0) || (pieceToMove.player === Player.BLACK && to.row === 7)) {
-        pieceToMove.type = PieceType.GENERAL;
-      }
-    }
-
-    newBoard[to.row][to.col] = pieceToMove;
-    newBoard[from.row][from.col] = null;
-    
-    setBoard(newBoard);
-    setSelectedPiece(null);
-    setValidMoves([]);
-
-    const nextPlayer = currentPlayer === Player.WHITE ? Player.BLACK : Player.WHITE;
-    setCurrentPlayer(nextPlayer);
-    updateGameStatus(newBoard, nextPlayer);
-  };
   
   return (
     <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 p-4 text-white font-sans">
@@ -127,7 +128,7 @@ const App: React.FC = () => {
         <p className="text-lg text-amber-200">The Ancient Game of Chess</p>
         <div className="w-full h-px bg-slate-700 my-2"></div>
         <div className="text-2xl font-semibold p-4 bg-slate-700 rounded-md w-full text-center">
-            {gameStatus}
+            {isAiThinking ? 'AI is thinking...' : gameStatus}
         </div>
         <button
           onClick={resetGame}

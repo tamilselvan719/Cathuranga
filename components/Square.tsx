@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Piece, Position } from '../types';
 import PieceIcon from './PieceIcon';
@@ -14,18 +13,19 @@ interface SquareProps {
 }
 
 const Square: React.FC<SquareProps> = ({ piece, position, isLight, isSelected, isPossibleMove, isKingInCheck, onClick }) => {
-  const bgClass = isLight ? 'bg-amber-200' : 'bg-amber-600';
-  const selectedClass = isSelected ? 'bg-yellow-400' : '';
-  const checkClass = isKingInCheck ? 'bg-red-500' : '';
+  const bgClass = isLight ? 'bg-[#DEB887]' : 'bg-[#8B4513]';
+  const selectedClass = isSelected ? 'bg-yellow-400/70' : '';
+  const checkClass = isKingInCheck ? 'bg-red-500/70' : '';
   
   return (
     <div
-      className={`w-full h-full flex justify-center items-center relative cursor-pointer ${bgClass} ${selectedClass} ${checkClass}`}
+      className={`w-full h-full flex justify-center items-center relative cursor-pointer ${bgClass}`}
       onClick={() => onClick(position)}
     >
-      {piece && <PieceIcon piece={piece} />}
+      <div className={`absolute w-full h-full ${selectedClass} ${checkClass}`}></div>
+      {piece && <div className="relative z-10 w-full h-full"><PieceIcon piece={piece} /></div>}
       {isPossibleMove && (
-        <div className="absolute w-1/3 h-1/3 bg-green-500/50 rounded-full"></div>
+        <div className="absolute w-1/3 h-1/3 bg-green-500/50 rounded-full z-20"></div>
       )}
     </div>
   );

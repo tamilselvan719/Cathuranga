@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BoardState, PieceType, Player, Position } from '../types';
 import Square from './Square';
@@ -13,7 +12,7 @@ interface BoardProps {
 
 const Board: React.FC<BoardProps> = ({ board, selectedPiece, validMoves, onSquareClick, kingInCheckPos }) => {
   return (
-    <div className="grid grid-cols-8 aspect-square w-full max-w-[80vh] shadow-lg border-4 border-amber-800">
+    <div className="grid grid-cols-8 grid-rows-8 aspect-square w-full max-w-[80vh] shadow-lg border-4 border-amber-950">
       {board.map((row, rowIndex) =>
         row.map((piece, colIndex) => {
           const isLight = (rowIndex + colIndex) % 2 !== 0;
