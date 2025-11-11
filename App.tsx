@@ -14,6 +14,7 @@ import {
 import { INITIAL_BOARD } from './constants';
 import * as gameLogic from './services/gameLogic';
 import * as ai from './services/ai';
+import * as notation from './services/notation';
 import Board from './components/Board';
 import MainMenu from './components/MainMenu';
 import HelpScreen from './components/HelpScreen';
@@ -38,6 +39,7 @@ const App: React.FC = () => {
     const [gameStatus, setGameStatus] = useState<string>("White's turn to move");
     const [capturedPieces, setCapturedPieces] = useState<CapturedPieces>({ [Player.WHITE]: [], [Player.BLACK]: [] });
     const [history, setHistory] = useState<string[]>([]);
+    const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
     // Timers
     const [timers, setTimers] = useState<{ [key in Player]: number }>({ [Player.WHITE]: Infinity, [Player.BLACK]: Infinity });
@@ -77,6 +79,7 @@ const App: React.FC = () => {
         setGameStatus("White's turn to move");
         setCapturedPieces({ [Player.WHITE]: [], [Player.BLACK]: [] });
         setHistory([JSON.stringify(INITIAL_BOARD)]);
+        setMoveHistory([]);
         setGameState('playing');
 
         const timeInSeconds = settings.time === 'unlimited' ? Infinity : settings.time * 60;
@@ -117,15 +120,15 @@ const App: React.FC = () => {
     const updateGameStatus = useCallback((boardState: BoardState, player: Player) => {
         const opponent = player === Player.WHITE ? Player.BLACK : Player.WHITE;
         if (gameLogic.isCheckmate(boardState, opponent)) {
-            setGameStatus(`Checkmate! ${player} wins!`);
+            setGameStatus(`Checkmate! ${player.charAt(0).toUpperCase() + player.slice(1)} wins!`);
             return true;
         }
         if (gameLogic.isStalemate(boardState, opponent)) {
-            setGameStatus(`Stalemate! ${player} wins!`);
+            setGameStatus(`Stalemate! ${player.charAt(0).toUpperCase() + player.slice(1)} wins!`);
             return true;
         }
         if (gameLogic.isBareKing(boardState, opponent)) {
-            setGameStatus(`Bare King! ${player} wins!`);
+            setGameStatus(`Bare King! ${player.charAt(0).toUpperCase() + player.slice(1)} wins!`);
             return true;
         }
         const boardString = JSON.stringify(boardState);
@@ -167,6 +170,10 @@ const App: React.FC = () => {
         }
         
         newBoard[from.row][from.col] = null;
+
+        const moveNotation = notation.getMoveNotation(from, to, pieceToMove, captured, newBoard);
+        setMoveHistory(prev => [...prev, moveNotation]);
+
         setBoard(newBoard);
         setSelectedPiece(null);
         setValidMoves([]);
@@ -267,7 +274,7 @@ const App: React.FC = () => {
     
     return (
         <main className="bg-slate-800 min-h-screen text-white font-sans flex flex-col justify-center items-center p-2 sm:p-4">
-            <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-start gap-4">
+            <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4">
 
                 {/* --- Mobile Top Info Bar --- */}
                 <div className="w-full md:hidden">
@@ -281,7 +288,7 @@ const App: React.FC = () => {
                 </div>
                 
                 {/* --- Game Board Area --- */}
-                <div className="relative w-full aspect-square max-w-2xl mx-auto md:flex-1">
+                <div className="relative w-full aspect-square max-w-2xl mx-auto">
                     <Board 
                         board={board}
                         selectedPiece={selectedPiece}
@@ -294,13 +301,14 @@ const App: React.FC = () => {
                 </div>
 
                 {/* --- Desktop Side Panel --- */}
-                <div className="w-full md:w-80 lg:w-96 hidden md:block">
+                <div className="w-full md:w-80 lg:w-96 hidden md:block relative">
                     <SidePanel 
                         gameSettings={gameSettings}
                         timers={timers}
                         currentPlayer={currentPlayer}
                         gameStatus={gameStatus}
                         capturedPieces={capturedPieces}
+                        moveHistory={moveHistory}
                         onReset={resetGame}
                         onGoToMainMenu={goToMainMenu}
                         onResign={handleResign}

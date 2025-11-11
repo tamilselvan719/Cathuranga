@@ -2,7 +2,7 @@
 import React from 'react';
 import { GameSettings, Player, CapturedPieces } from '../types';
 import PlayerInfo from './PlayerInfo';
-import Timer from './Timer';
+import MoveHistoryPanel from './MoveHistoryPanel';
 
 interface SidePanelProps {
     gameSettings: GameSettings;
@@ -10,6 +10,7 @@ interface SidePanelProps {
     currentPlayer: Player;
     gameStatus: string;
     capturedPieces: CapturedPieces;
+    moveHistory: string[];
     onReset: () => void;
     onGoToMainMenu: () => void;
     onResign: () => void;
@@ -21,6 +22,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
     currentPlayer,
     gameStatus,
     capturedPieces,
+    moveHistory,
     onReset,
     onGoToMainMenu,
     onResign,
@@ -32,7 +34,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
     const isGameOver = gameStatus.includes('wins') || gameStatus.includes('Draw');
 
     return (
-        <div className="bg-slate-900 h-full rounded-lg shadow-xl flex flex-col p-4">
+        <div className="bg-slate-900 absolute inset-0 rounded-lg shadow-xl flex flex-col p-4 w-full">
             <PlayerInfo 
                 player={opponentPlayer} 
                 isAI={opponentPlayer === aiColor}
@@ -41,8 +43,8 @@ const SidePanel: React.FC<SidePanelProps> = ({
                 isActive={currentPlayer === opponentPlayer}
             />
             
-            <div className="flex-grow flex flex-col justify-center items-center my-4">
-                 {/* This empty div will contain move history in a future update */}
+            <div className="flex-grow my-4 min-h-0">
+                 <MoveHistoryPanel moves={moveHistory} />
             </div>
 
              <PlayerInfo 
