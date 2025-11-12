@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   BoardState,
@@ -57,6 +58,7 @@ const App: React.FC = () => {
     
     // Game Setup
     const setupNewGame = useCallback((settings: Omit<GameSettings, 'playerColor' | 'aiColor' | 'aiDepth'>) => {
+        soundService.unlockAudio(); // Unlock audio on first user interaction.
         let playerColor: Player;
         if (settings.playerChoice === 'random') {
             playerColor = Math.random() < 0.5 ? Player.WHITE : Player.BLACK;
@@ -204,18 +206,23 @@ const App: React.FC = () => {
 
         if (!isGameOverAfterUpdate) {
             setCurrentPlayer(nextPlayer);
-             // Add increment if applicable
+             // Add increment if applicable, but not on the first move for each player.
             if (gameSettings && gameSettings.time !== 'unlimited') {
-                const newTimers = { ...timers };
-                newTimers[currentPlayer] += gameSettings.increment;
-                setTimers(newTimers);
+                const isWhitesFirstMove = currentPlayer === Player.WHITE && moveHistory.length === 1;
+                const isBlacksFirstMove = currentPlayer === Player.BLACK && moveHistory.length === 2;
+
+                if (!isWhitesFirstMove && !isBlacksFirstMove) {
+                    const newTimers = { ...timers };
+                    newTimers[currentPlayer] += gameSettings.increment;
+                    setTimers(newTimers);
+                }
             }
         } else {
              if (timerRef.current) clearInterval(timerRef.current);
         }
         
         setHistory(prev => [...prev, JSON.stringify(newBoard)]);
-    }, [board, currentPlayer, updateGameStatus, capturedPieces, gameSettings, timers, history]);
+    }, [board, currentPlayer, updateGameStatus, capturedPieces, gameSettings, timers, history, moveHistory]);
 
     const handleSquareClick = useCallback((pos: Position) => {
         if (gameStatus.includes('wins') || gameStatus.includes('Draw')) return;
@@ -251,7 +258,19 @@ const App: React.FC = () => {
     
     // Timer logic
     useEffect(() => {
-        if (gameState !== 'playing' || gameSettings?.time === 'unlimited' || gameStatus.includes('wins') || gameStatus.includes('Draw') || history.length <= 1) {
+        if (gameState !== 'playing' || gameSettings?.time === 'unlimited' || gameStatus.includes('wins') || gameStatus.includes('Draw')) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            return;
+        }
+
+        // Timer only starts for a player after they have made their first move.
+        // White's timer starts on their 2nd turn (when move history has 2+ moves).
+        // Black's timer starts on their 2nd turn (when move history has 3+ moves).
+        const shouldTimerRun = 
+            (currentPlayer === Player.WHITE && moveHistory.length >= 2) ||
+            (currentPlayer === Player.BLACK && moveHistory.length >= 3);
+
+        if (!shouldTimerRun) {
             if (timerRef.current) clearInterval(timerRef.current);
             return;
         }
@@ -273,7 +292,7 @@ const App: React.FC = () => {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [currentPlayer, gameState, gameSettings, gameStatus, history]);
+    }, [currentPlayer, gameState, gameSettings, gameStatus, moveHistory]);
     
     // Main render logic
     if (gameState === 'menu') {
