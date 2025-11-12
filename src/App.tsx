@@ -1,16 +1,14 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  BoardState,
-  Player,
-  Position,
-  GameState,
-  GameSettings,
-  Piece,
-  CapturedPieces,
-  Difficulty,
-  PieceType,
+    BoardState,
+    Player,
+    Position,
+    GameState,
+    GameSettings,
+    Piece,
+    CapturedPieces,
+    Difficulty,
+    PieceType,
 } from './types';
 import { INITIAL_BOARD } from './constants';
 import * as gameLogic from './services/gameLogic';
@@ -55,7 +53,7 @@ const App: React.FC = () => {
             default: return 2;
         }
     };
-    
+
     // Game Setup
     const setupNewGame = useCallback((settings: Omit<GameSettings, 'playerColor' | 'aiColor' | 'aiDepth'>) => {
         soundService.unlockAudio(); // Unlock audio on first user interaction.
@@ -65,14 +63,14 @@ const App: React.FC = () => {
         } else {
             playerColor = settings.playerChoice as Player;
         }
-        
+
         const newGameSettings: GameSettings = {
             ...settings,
             playerColor: playerColor,
             aiColor: playerColor === Player.WHITE ? Player.BLACK : Player.WHITE,
             aiDepth: difficultyToDepth(settings.difficulty),
         };
-        
+
         setGameSettings(newGameSettings);
         setBoard(INITIAL_BOARD);
         setCurrentPlayer(Player.WHITE);
@@ -103,7 +101,7 @@ const App: React.FC = () => {
             });
         }
     }, [gameSettings, setupNewGame]);
-    
+
     const goToMainMenu = () => {
         setGameState('menu');
         setGameSettings(null);
@@ -145,7 +143,7 @@ const App: React.FC = () => {
             soundService.playSound('game-over');
             return true;
         }
-        
+
         const kingPos = gameLogic.getKingPosition(boardState, opponent);
         if (kingPos && gameLogic.isKingInCheck(boardState, opponent)) {
             setKingInCheckPos(kingPos);
@@ -157,7 +155,7 @@ const App: React.FC = () => {
         }
         return false;
     }, [history]);
-    
+
     const movePiece = useCallback((from: Position, to: Position) => {
         const pieceToMove = board[from.row][from.col];
         if (!pieceToMove) return;
@@ -171,9 +169,9 @@ const App: React.FC = () => {
         } else {
             newBoard[to.row][to.col] = pieceToMove;
         }
-        
+
         newBoard[from.row][from.col] = null;
-        
+
         const opponent = currentPlayer === Player.WHITE ? Player.BLACK : Player.WHITE;
         const isCheck = gameLogic.isKingInCheck(newBoard, opponent);
         const isGameOver = gameLogic.isCheckmate(newBoard, opponent) || gameLogic.isStalemate(newBoard, opponent) || gameLogic.isBareKing(newBoard, opponent);
@@ -185,7 +183,7 @@ const App: React.FC = () => {
                 soundService.playSound('move');
             }
         }
-        
+
         if (captured) {
             const newCapturedPieces = { ...capturedPieces };
             newCapturedPieces[pieceToMove.player].push(captured);
@@ -199,14 +197,14 @@ const App: React.FC = () => {
         setBoard(newBoard);
         setSelectedPiece(null);
         setValidMoves([]);
-        
+
         const nextPlayer = currentPlayer === Player.WHITE ? Player.BLACK : Player.WHITE;
-        
+
         const isGameOverAfterUpdate = updateGameStatus(newBoard, currentPlayer);
 
         if (!isGameOverAfterUpdate) {
             setCurrentPlayer(nextPlayer);
-             // Add increment if applicable, but not on the first move for each player.
+            // Add increment if applicable, but not on the first move for each player.
             if (gameSettings && gameSettings.time !== 'unlimited') {
                 const isWhitesFirstMove = currentPlayer === Player.WHITE && moveHistory.length === 1;
                 const isBlacksFirstMove = currentPlayer === Player.BLACK && moveHistory.length === 2;
@@ -218,9 +216,9 @@ const App: React.FC = () => {
                 }
             }
         } else {
-             if (timerRef.current) clearInterval(timerRef.current);
+            if (timerRef.current) clearInterval(timerRef.current);
         }
-        
+
         setHistory(prev => [...prev, JSON.stringify(newBoard)]);
     }, [board, currentPlayer, updateGameStatus, capturedPieces, gameSettings, timers, history, moveHistory]);
 
@@ -229,7 +227,7 @@ const App: React.FC = () => {
         if (currentPlayer === gameSettings?.aiColor) return; // Don't allow player to move for AI
 
         const piece = board[pos.row][pos.col];
-        
+
         if (selectedPiece) {
             const isValidMove = validMoves.some(m => m.row === pos.row && m.col === pos.col);
             if (isValidMove) {
@@ -255,7 +253,7 @@ const App: React.FC = () => {
             }, 500); // Small delay for user to see the move
         }
     }, [currentPlayer, gameSettings, board, movePiece, gameStatus]);
-    
+
     // Timer logic
     useEffect(() => {
         if (gameState !== 'playing' || gameSettings?.time === 'unlimited' || gameStatus.includes('wins') || gameStatus.includes('Draw')) {
@@ -266,7 +264,7 @@ const App: React.FC = () => {
         // Timer only starts for a player after they have made their first move.
         // White's timer starts on their 2nd turn (when move history has 2+ moves).
         // Black's timer starts on their 2nd turn (when move history has 3+ moves).
-        const shouldTimerRun = 
+        const shouldTimerRun =
             (currentPlayer === Player.WHITE && moveHistory.length >= 2) ||
             (currentPlayer === Player.BLACK && moveHistory.length >= 3);
 
@@ -293,7 +291,7 @@ const App: React.FC = () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [currentPlayer, gameState, gameSettings, gameStatus, moveHistory]);
-    
+
     // Main render logic
     if (gameState === 'menu') {
         return <MainMenu onStartGame={setupNewGame} onShowHelp={() => setGameState('help')} />;
@@ -311,14 +309,14 @@ const App: React.FC = () => {
     const isPlayerBlack = gameSettings.playerColor === Player.BLACK;
     const topPlayer = isPlayerBlack ? Player.WHITE : Player.BLACK;
     const bottomPlayer = isPlayerBlack ? Player.BLACK : Player.WHITE;
-    
+
     return (
         <main className="bg-slate-800 min-h-screen text-white font-sans flex flex-col justify-center items-center p-2 sm:p-4">
             <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4">
 
                 {/* --- Mobile Top Info Bar --- */}
                 <div className="w-full md:hidden">
-                    <MobileInfoBar 
+                    <MobileInfoBar
                         player={topPlayer}
                         isAI={topPlayer === gameSettings.aiColor}
                         time={timers[topPlayer]}
@@ -326,10 +324,10 @@ const App: React.FC = () => {
                         capturedPieces={capturedPieces[bottomPlayer]}
                     />
                 </div>
-                
+
                 {/* --- Game Board Area --- */}
                 <div className="relative w-full aspect-square max-w-2xl mx-auto">
-                    <Board 
+                    <Board
                         board={board}
                         selectedPiece={selectedPiece}
                         validMoves={validMoves}
@@ -337,12 +335,12 @@ const App: React.FC = () => {
                         kingInCheckPos={kingInCheckPos}
                         isFlipped={isPlayerBlack}
                     />
-                    {isGameOver && <GameOverOverlay gameStatus={gameStatus} onReset={resetGame} onGoToMainMenu={goToMainMenu}/>}
+                    {isGameOver && <GameOverOverlay gameStatus={gameStatus} onReset={resetGame} onGoToMainMenu={goToMainMenu} />}
                 </div>
 
                 {/* --- Desktop Side Panel --- */}
                 <div className="w-full md:w-80 lg:w-96 hidden md:block relative">
-                    <SidePanel 
+                    <SidePanel
                         gameSettings={gameSettings}
                         timers={timers}
                         currentPlayer={currentPlayer}
@@ -354,10 +352,10 @@ const App: React.FC = () => {
                         onResign={handleResign}
                     />
                 </div>
-                
+
                 {/* --- Mobile Bottom Info Bar & Actions --- */}
                 <div className="w-full md:hidden">
-                    <MobileInfoBar 
+                    <MobileInfoBar
                         player={bottomPlayer}
                         isAI={bottomPlayer === gameSettings.aiColor}
                         time={timers[bottomPlayer]}

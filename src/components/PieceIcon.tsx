@@ -31,8 +31,10 @@ const pieceImageUrls: Record<PieceType, Record<Player, string>> = {
     [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
   },
   [PieceType.PAWN]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+    //[Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
+    //[Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+    [Player.WHITE]: 'assets/pawn_white.svg',
+    [Player.BLACK]: 'assets/pawn_black.svg',
   },
 };
 
@@ -50,7 +52,7 @@ const PieceIcon: React.FC<PieceIconProps> = ({ piece }) => {
       alt={`${piece.player} ${piece.type}`}
       className="w-full h-full"
       // Add draggable="false" to improve user experience on desktop
-      draggable="false" 
+      draggable="false"
     />
   );
 };
