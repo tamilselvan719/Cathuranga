@@ -7,28 +7,38 @@ interface PieceIconProps {
 
 const pieceImageUrls: Record<PieceType, Record<Player, string>> = {
   [PieceType.KING]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+    // [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+    // [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+    [Player.WHITE]: 'assets/king_white.svg',
+    [Player.BLACK]: 'assets/king_black.svg',
   },
   // Using Queen for General
   [PieceType.GENERAL]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Chess_xlt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/c/c4/Chess_xdt45.svg',
+    // [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Chess_xlt45.svg',
+    // [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/c/c4/Chess_xdt45.svg',
+    [Player.WHITE]: 'assets/general_white.svg',
+    [Player.BLACK]: 'assets/general_black.svg',
   },
   // Using Bishop for Elephant
   [PieceType.ELEPHANT]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Chess_elt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Chess_edt45.svg',
+    // [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Chess_elt45.svg',
+    // [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Chess_edt45.svg',
+    [Player.WHITE]: 'assets/elephant_white.svg',
+    [Player.BLACK]: 'assets/elephant_black.svg',
   },
   // Using Knight for Horse
   [PieceType.HORSE]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+    // [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+    // [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+    [Player.WHITE]: 'assets/knight_white.svg',
+    [Player.BLACK]: 'assets/knight_black.svg',
   },
   // Using Rook for Chariot
   [PieceType.CHARIOT]: {
-    [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-    [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+    // [Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+    // [Player.BLACK]: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+    [Player.WHITE]: 'assets/chariot_white.svg',
+    [Player.BLACK]: 'assets/chariot_black.svg',
   },
   [PieceType.PAWN]: {
     //[Player.WHITE]: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
