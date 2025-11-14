@@ -307,6 +307,10 @@ const App: React.FC = () => {
     const topPlayer = isPlayerBlack ? Player.WHITE : Player.BLACK;
     const bottomPlayer = isPlayerBlack ? Player.BLACK : Player.WHITE;
 
+    const showResignButton =
+        (gameSettings.playerColor === Player.WHITE && moveHistory.length >= 1) ||
+        (gameSettings.playerColor === Player.BLACK && moveHistory.length >= 2);
+
     return (
         <main className="bg-slate-800 min-h-screen text-white font-sans flex flex-col justify-center items-center p-2 sm:p-4">
             <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4">
@@ -368,7 +372,7 @@ const App: React.FC = () => {
                         isActive={currentPlayer === bottomPlayer}
                         capturedPieces={capturedPieces[topPlayer]}
                     />
-                    <ActionPanel gameStatus={gameStatus} onReset={resetGame} onGoToMainMenu={goToMainMenu} onResign={openResignConfirm} moveHistory={moveHistory} />
+                    <ActionPanel gameStatus={gameStatus} onGoToMainMenu={goToMainMenu} onResign={openResignConfirm} showResignButton={showResignButton} />
                 </div>
             </div>
         </main>

@@ -34,6 +34,10 @@ const SidePanel: React.FC<SidePanelProps> = ({
     const opponentPlayer = playerColor === Player.WHITE ? Player.BLACK : Player.WHITE;
     const isGameOver = gameStatus.includes('wins') || gameStatus.includes('Draw');
 
+    const showResignButton =
+        (playerColor === Player.WHITE && moveHistory.length >= 1) ||
+        (playerColor === Player.BLACK && moveHistory.length >= 2);
+
     return (
         <div className="bg-slate-900 absolute inset-0 rounded-lg shadow-xl flex flex-col p-4 w-full">
             <PlayerInfo
@@ -62,7 +66,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                 </p>
             </div>
 
-            <ActionPanel gameStatus={gameStatus} onReset={onReset} onGoToMainMenu={onGoToMainMenu} onResign={onResign} moveHistory={moveHistory} />
+            <ActionPanel gameStatus={gameStatus} onGoToMainMenu={onGoToMainMenu} onResign={onResign} showResignButton={showResignButton} />
         </div>
     );
 };

@@ -3,13 +3,12 @@ import React from 'react';
 
 interface ActionPanelProps {
     gameStatus: string;
-    moveHistory: string[];
-    onReset: () => void;
     onGoToMainMenu: () => void;
     onResign: () => void;
+    showResignButton: boolean;
 }
 
-const ActionPanel: React.FC<ActionPanelProps> = ({ gameStatus, onReset, onGoToMainMenu, onResign, moveHistory }) => {
+const ActionPanel: React.FC<ActionPanelProps> = ({ gameStatus, onGoToMainMenu, onResign, showResignButton }) => {
     const isGameOver = gameStatus.includes('wins') || gameStatus.includes('Draw');
     return (
         <div className="w-full bg-slate-900 p-2 flex flex-col items-center gap-2">
@@ -19,7 +18,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ gameStatus, onReset, onGoToMa
                 </p>
             </div>
             <div className="grid grid-cols-1 gap-3 mt-2">
-                {moveHistory.length === 0 ? (
+                {!showResignButton ? (
                     <button
                         onClick={onGoToMainMenu}
                         className="w-full px-4 py-2 bg-slate-700 text-white font-semibold rounded-md hover:bg-slate-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-slate-500"
