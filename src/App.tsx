@@ -121,7 +121,7 @@ const App: React.FC = () => {
             time: 'unlimited',
             increment: 0,
         };
-    
+
         setGameSettings(newGameSettings);
         setBoard(INITIAL_BOARD);
         setCurrentPlayer(Player.WHITE);
@@ -173,6 +173,17 @@ const App: React.FC = () => {
 
     const updateGameStatus = useCallback(async (boardState: BoardState, player: Player) => {
         const opponent = player === Player.WHITE ? Player.BLACK : Player.WHITE;
+
+        // Check for bare kings draw
+        const playerHasOnlyKing = gameLogic.hasOnlyKingLeft(boardState, player);
+        const opponentHasOnlyKing = gameLogic.hasOnlyKingLeft(boardState, opponent);
+
+        if (playerHasOnlyKing && opponentHasOnlyKing) {
+            setGameStatus('Draw!');
+            soundService.playSound('game-over');
+            return true;
+        }
+
         if (await gameLogic.isCheckmate(boardState, opponent)) {
             setGameStatus(`Checkmate! ${player.charAt(0).toUpperCase() + player.slice(1)} wins!`);
             soundService.playSound('game-over');
@@ -386,178 +397,177 @@ const App: React.FC = () => {
         return <MainMenu onStartGame={setupNewGame} onShowHelp={() => setGameState('help')} onWatchAiPlay={setupAiVsAiGame} />;
     }
 
-        if (gameState === 'help') {
+    if (gameState === 'help') {
 
-            return <HelpScreen onBack={goToMainMenu} />;
+        return <HelpScreen onBack={goToMainMenu} />;
 
-        }
+    }
 
-    
 
-        if (!gameSettings) {
 
-            return <div>Loading...</div>;
+    if (!gameSettings) {
 
-        }
+        return <div>Loading...</div>;
 
-    
+    }
 
-        const isAiVsAi = gameSettings.gameMode === 'ai-vs-ai';
 
-        const isPlayerBlack = !isAiVsAi && gameSettings.playerColor === Player.BLACK;
 
-        const topPlayer = isPlayerBlack ? Player.WHITE : Player.BLACK;
+    const isAiVsAi = gameSettings.gameMode === 'ai-vs-ai';
 
-        const bottomPlayer = isPlayerBlack ? Player.BLACK : Player.WHITE;
+    const isPlayerBlack = !isAiVsAi && gameSettings.playerColor === Player.BLACK;
 
-    
+    const topPlayer = isPlayerBlack ? Player.WHITE : Player.BLACK;
 
-        const showResignButton = !isAiVsAi && (
+    const bottomPlayer = isPlayerBlack ? Player.BLACK : Player.WHITE;
 
-            (gameSettings.playerColor === Player.WHITE && moveHistory.length >= 1) ||
 
-            (gameSettings.playerColor === Player.BLACK && moveHistory.length >= 2)
 
-        );
+    const showResignButton = !isAiVsAi && (
 
-    
+        (gameSettings.playerColor === Player.WHITE && moveHistory.length >= 1) ||
 
-        return (
+        (gameSettings.playerColor === Player.BLACK && moveHistory.length >= 2)
 
-            <main className="bg-slate-800 min-h-screen text-white font-sans flex flex-col justify-center items-center p-2 sm:p-4">
+    );
 
-                <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4">
 
-    
 
-                    {/* --- Mobile Top Info Bar --- */}
+    return (
 
-                    <div className="w-full md:hidden">
+        <main className="bg-slate-800 min-h-screen text-white font-sans flex flex-col justify-center items-center p-2 sm:p-4">
 
-                        <MobileInfoBar
+            <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4">
 
-                            player={topPlayer}
 
-                            isAI={isAiVsAi || topPlayer === gameSettings.aiColor}
 
-                            time={timers[topPlayer]}
+                {/* --- Mobile Top Info Bar --- */}
 
-                            isActive={currentPlayer === topPlayer}
+                <div className="w-full md:hidden">
 
-                            capturedPieces={capturedPieces[bottomPlayer]}
+                    <MobileInfoBar
 
-                        />
+                        player={topPlayer}
 
-                    </div>
+                        isAI={isAiVsAi || topPlayer === gameSettings.aiColor}
 
-    
+                        time={timers[topPlayer]}
 
-                    {/* --- Game Board Area --- */}
+                        isActive={currentPlayer === topPlayer}
 
-                    <div className="relative w-full aspect-square max-w-2xl mx-auto">
+                        capturedPieces={capturedPieces[bottomPlayer]}
 
-                        <Board
-
-                            board={board}
-
-                            selectedPiece={selectedPiece}
-
-                            validMoves={validMoves}
-
-                            onSquareClick={handleSquareClick}
-
-                            kingInCheckPos={kingInCheckPos}
-
-                            isFlipped={isPlayerBlack}
-
-                        />
-
-                        {isGameOver && <OverlayModal gameStatus={gameStatus} onReset={resetGame} onGoToMainMenu={goToMainMenu} />}
-
-                        {isResignConfirmOpen && (
-
-                            <OverlayModal
-
-                                gameStatus="Are you sure you want to resign?"
-
-                                onReset={confirmResign}
-
-                                onCancel={cancelResign}
-
-                                confirmText="Yes, Resign"
-
-                                cancelText="No, Continue"
-
-                            />
-
-                        )}
-
-                    </div>
-
-    
-
-                    {/* --- Desktop Side Panel --- */}
-
-                    <div className="w-full md:w-80 lg:w-96 hidden md:block relative">
-
-                        <SidePanel
-
-                            gameSettings={gameSettings}
-
-                            timers={timers}
-
-                            currentPlayer={currentPlayer}
-
-                            gameStatus={gameStatus}
-
-                            capturedPieces={capturedPieces}
-
-                            moveHistory={moveHistory}
-
-                            onReset={resetGame}
-
-                            onGoToMainMenu={goToMainMenu}
-
-                            onResign={isAiVsAi ? undefined : openResignConfirm}
-
-                        />
-
-                    </div>
-
-    
-
-                    {/* --- Mobile Bottom Info Bar & Actions --- */}
-
-                    <div className="w-full md:hidden">
-
-                        <MobileInfoBar
-
-                            player={bottomPlayer}
-
-                            isAI={isAiVsAi || bottomPlayer === gameSettings.aiColor}
-
-                            time={timers[bottomPlayer]}
-
-                            isActive={currentPlayer === bottomPlayer}
-
-                            capturedPieces={capturedPieces[topPlayer]}
-
-                        />
-
-                        <ActionPanel gameStatus={gameStatus} onGoToMainMenu={goToMainMenu} onResign={openResignConfirm} showResignButton={showResignButton} />
-
-                    </div>
+                    />
 
                 </div>
 
-            </main>
 
-        );
 
-    };
+                {/* --- Game Board Area --- */}
 
-    
+                <div className="relative w-full aspect-square max-w-2xl mx-auto">
 
-    export default App;
+                    <Board
 
-    
+                        board={board}
+
+                        selectedPiece={selectedPiece}
+
+                        validMoves={validMoves}
+
+                        onSquareClick={handleSquareClick}
+
+                        kingInCheckPos={kingInCheckPos}
+
+                        isFlipped={isPlayerBlack}
+
+                    />
+
+                    {isGameOver && <OverlayModal gameStatus={gameStatus} onReset={resetGame} onGoToMainMenu={goToMainMenu} />}
+
+                    {isResignConfirmOpen && (
+
+                        <OverlayModal
+
+                            gameStatus="Are you sure you want to resign?"
+
+                            onReset={confirmResign}
+
+                            onCancel={cancelResign}
+
+                            confirmText="Yes, Resign"
+
+                            cancelText="No, Continue"
+
+                        />
+
+                    )}
+
+                </div>
+
+
+
+                {/* --- Desktop Side Panel --- */}
+
+                <div className="w-full md:w-80 lg:w-96 hidden md:block relative">
+
+                    <SidePanel
+
+                        gameSettings={gameSettings}
+
+                        timers={timers}
+
+                        currentPlayer={currentPlayer}
+
+                        gameStatus={gameStatus}
+
+                        capturedPieces={capturedPieces}
+
+                        moveHistory={moveHistory}
+
+                        onReset={resetGame}
+
+                        onGoToMainMenu={goToMainMenu}
+
+                        onResign={isAiVsAi ? undefined : openResignConfirm}
+
+                    />
+
+                </div>
+
+
+
+                {/* --- Mobile Bottom Info Bar & Actions --- */}
+
+                <div className="w-full md:hidden">
+
+                    <MobileInfoBar
+
+                        player={bottomPlayer}
+
+                        isAI={isAiVsAi || bottomPlayer === gameSettings.aiColor}
+
+                        time={timers[bottomPlayer]}
+
+                        isActive={currentPlayer === bottomPlayer}
+
+                        capturedPieces={capturedPieces[topPlayer]}
+
+                    />
+
+                    <ActionPanel gameStatus={gameStatus} onGoToMainMenu={goToMainMenu} onResign={openResignConfirm} showResignButton={showResignButton} />
+
+                </div>
+
+            </div>
+
+        </main>
+
+    );
+
+};
+
+
+
+export default App;
+

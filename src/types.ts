@@ -28,7 +28,7 @@ export type BoardState = (Piece | null)[][];
 export type PlayerColorChoice = Player.WHITE | Player.BLACK | 'random';
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 export type TimeOption = 5 | 10 | 30 | 'unlimited';
-export type IncrementOption = 1 | 5 | 10;
+export type IncrementOption = 0 | 1 | 5 | 10;
 export type GameState = 'menu' | 'playing' | 'help';
 export type GameMode = 'player-vs-ai' | 'ai-vs-ai';
 

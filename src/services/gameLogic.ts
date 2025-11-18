@@ -67,6 +67,24 @@ export const getKingPosition = (board: BoardState, player: Player): Position | n
     return null;
 };
 
+export const hasOnlyKingLeft = (board: BoardState, player: Player): boolean => {
+    let kingCount = 0;
+    let otherPieceCount = 0;
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = board[r][c];
+            if (piece && piece.player === player) {
+                if (piece.type === PieceType.KING) {
+                    kingCount++;
+                } else {
+                    otherPieceCount++;
+                }
+            }
+        }
+    }
+    return kingCount === 1 && otherPieceCount === 0;
+};
+
 export const getValidMoves = async (piece: Piece, pos: Position, board: BoardState): Promise<Position[]> => {
     const ffish = await getFfishLibrary();
     const ffishBoard = new ffish.Board('chaturanga-custom');
